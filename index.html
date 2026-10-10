@@ -1,153 +1,151 @@
-Do lỗi thay đổi nội dung (`innerHTML`) của hộp thoại ngay khi bấm vào nút nằm bên trong nó trên một số trình duyệt di động gây ra hiện tượng xung đột sự kiện và tự đóng.
+Đã tối ưu hóa giao diện cho điện thoại theo phong cách giống các nền tảng thi trắc nghiệm chuyên nghiệp như Azota:
 
-Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cách đóng hẳn bảng xác nhận cũ trước, sau đó mới mở bảng kết quả điểm số một cách mượt mà, ổn định và giữ nguyên 100% toàn bộ tính năng:
+* **Cố định khung nhìn (App-like UI):** Phần điều hướng (Nút *Câu trước / Câu tiếp*) và thanh công cụ được **găm cứng** ở khung nhìn, không bị trôi hay che khuất.
+* **Cuộn nội dung độc lập:** Phần câu hỏi và đáp án có thanh cuộn mượt mà bên trong, giúp màn hình điện thoại không bị dài thòng lọng, bấm chọn đáp án và chuyển câu cực kỳ nhanh gọn.
+* **Giữ nguyên 100%** toàn bộ 75 câu hỏi, tính năng nộp bài, chấm điểm, đánh giá năng lực và không làm thay đổi bất kỳ logic nào trước đó.
+
+Dưới đây là toàn bộ mã nguồn đã được tối ưu hoàn hảo cho mobile:
 
 ```html
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ôn Tập Môn Sử GK1 - Lớp 12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 h-full flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white overflow-hidden">
 
-    <header class="bg-slate-800 border-b border-slate-700 shadow-lg sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 shadow-lg shrink-0 z-30">
+        <div class="max-w-7xl mx-auto px-3 py-2.5 sm:px-6 flex justify-between items-center gap-2">
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-                    📜 Ôn Tập Môn Lịch Sử GK1 (Khối 12)
+                <h1 class="text-base sm:text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                    📜 Ôn Tập Lịch Sử GK1
                 </h1>
-                <p class="text-xs sm:text-sm text-slate-400">
-                    55 câu đề cương gốc (6-7đ) + 20 câu dự đoán (3-4đ) | <span class="text-indigo-300 font-semibold">cre by KhDung</span>
+                <p class="text-[11px] sm:text-sm text-slate-400 hidden sm:block">
+                    55 câu đề cương (6-7đ) + 20 câu dự đoán (3-4đ) | <span class="text-indigo-300 font-semibold">cre by KhDung</span>
                 </p>
             </div>
-            <div class="flex items-center gap-3">
-                <div id="timerDisplay" class="bg-slate-700/80 px-3 py-1.5 rounded-xl text-sm font-mono text-cyan-300 border border-slate-600 shadow-inner">
+            <div class="flex items-center gap-2">
+                <div id="timerDisplay" class="bg-slate-700/80 px-2.5 py-1 rounded-lg text-xs sm:text-sm font-mono text-cyan-300 border border-slate-600 shadow-inner">
                     ⏱️ 00:00
                 </div>
-                <button onclick="confirmSubmitQuiz()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md transition transform active:scale-95">
+                <button onclick="confirmSubmitQuiz()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold shadow-md transition transform active:scale-95">
                     Nộp Bài 🚀
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Main Container Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-6 grid grid-cols-1 lg:grid-cols-4 gap-3 overflow-hidden">
         
-        <!-- Left / Center: Question Card Area -->
-        <section class="lg:col-span-3 flex flex-col bg-slate-800/70 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl overflow-hidden min-h-[500px]">
+        <!-- Left / Center: Question Card Area (Azota Mobile Style: Fixed frame with inner scroll) -->
+        <section class="lg:col-span-3 flex flex-col bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl overflow-hidden h-full">
+            
             <!-- Toolbar / Filter Bar -->
-            <div class="bg-slate-800/90 p-4 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3 text-sm">
-                <div class="flex items-center gap-2">
-                    <span id="questionCategoryBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        Đề cương chính thức (6-7 điểm)
+            <div class="bg-slate-800/90 p-3 border-b border-slate-700 flex items-center justify-between gap-2 shrink-0 text-xs sm:text-sm">
+                <div class="flex items-center gap-2 truncate">
+                    <span id="questionCategoryBadge" class="px-2.5 py-0.5 rounded-full font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 truncate">
+                        Đề cương (6-7đ)
                     </span>
-                    <span id="questionProgressText" class="text-slate-400 font-medium">Câu 1 / 75</span>
+                    <span id="questionProgressText" class="text-slate-400 font-medium shrink-0">1/75</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="toggleBookmark()" id="bookmarkBtn" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition flex items-center gap-1.5 border border-slate-600">
-                        ⭐ Đánh dấu ôn lại
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="toggleBookmark()" id="bookmarkBtn" class="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition flex items-center gap-1 border border-slate-600">
+                        ⭐ <span class="hidden sm:inline">Đánh dấu</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Question Box -->
-            <div class="p-6 sm:p-8 flex-1 flex flex-col justify-between">
+            <!-- Scrollable Question & Options Area -->
+            <div class="p-4 sm:p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col justify-between">
                 <div>
-                    <h2 id="questionTitle" class="text-lg sm:text-xl font-semibold text-slate-100 leading-relaxed mb-6">
+                    <h2 id="questionTitle" class="text-base sm:text-xl font-semibold text-slate-100 leading-snug sm:leading-relaxed mb-4">
                         Đang tải câu hỏi...
                     </h2>
 
                     <!-- Options Container -->
-                    <div id="optionsContainer" class="space-y-3.5">
+                    <div id="optionsContainer" class="space-y-2.5 sm:space-y-3.5">
                         <!-- Options generated dynamically -->
                     </div>
                 </div>
 
-                <!-- Explanation Box (Hidden initially) -->
-                <div id="explanationBox" class="mt-6 p-4 rounded-xl bg-slate-900/60 border border-slate-700/60 hidden text-sm text-slate-300">
+                <!-- Explanation Box -->
+                <div id="explanationBox" class="mt-4 p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/60 hidden text-xs sm:text-sm text-slate-300">
                     <span class="font-bold text-cyan-400 block mb-1">💡 Giải thích / Ghi nhớ:</span>
                     <p id="explanationText"></p>
                 </div>
             </div>
 
-            <!-- Question Navigation Bottom Bar -->
-            <div class="p-4 bg-slate-800/90 border-t border-slate-700 flex items-center justify-between">
-                <button onclick="prevQuestion()" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-sm transition disabled:opacity-40 disabled:cursor-not-allowed" id="prevBtn">
-                    ← Câu trước
+            <!-- Fixed Bottom Navigation Bar inside Question Card -->
+            <div class="p-3 bg-slate-800/95 border-t border-slate-700 flex items-center justify-between shrink-0">
+                <button onclick="prevQuestion()" class="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-xs sm:text-sm transition disabled:opacity-30 disabled:cursor-not-allowed" id="prevBtn">
+                    ← Trước
                 </button>
-                <div class="text-xs text-slate-400 hidden sm:block">
-                    Sử dụng phím mũi tên ← → hoặc bấm bảng bên phải để chuyển câu.
+                <div class="text-[11px] text-slate-400 hidden sm:block">
+                    Dùng phím mũi tên ← → hoặc bảng bên phải để chuyển câu.
                 </div>
-                <button onclick="nextQuestion()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition shadow-lg shadow-indigo-600/30" id="nextBtn">
-                    Câu tiếp →
+                <button onclick="nextQuestion()" class="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm transition shadow-lg shadow-indigo-600/30" id="nextBtn">
+                    Tiếp →
                 </button>
             </div>
         </section>
 
-        <!-- Right Sidebar: Question Palette & Stats -->
-        <aside class="lg:col-span-1 bg-slate-800/70 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl flex flex-col h-[450px] lg:h-auto overflow-hidden">
-            <div class="p-4 bg-slate-800/90 border-b border-slate-700 flex justify-between items-center shrink-0">
-                <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+        <!-- Right Sidebar: Question Palette & Stats (Collapsible / Compact on Mobile) -->
+        <aside class="lg:col-span-1 bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl flex flex-col h-36 lg:h-full overflow-hidden shrink-0">
+            <div class="p-2.5 sm:p-4 bg-slate-800/90 border-b border-slate-700 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-xs sm:text-sm text-slate-200 flex items-center gap-1.5">
                     📋 Bảng Câu Hỏi (75)
                 </h3>
-                <span class="text-xs bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full font-medium border border-cyan-500/30" id="answeredCount">0/75 đã làm</span>
+                <span class="text-[11px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-medium border border-cyan-500/30" id="answeredCount">0/75</span>
             </div>
 
             <!-- Filter tabs -->
-            <div class="grid grid-cols-3 gap-1 p-2 bg-slate-900/40 text-xs font-medium text-slate-400 border-b border-slate-700 shrink-0">
-                <button onclick="filterPalette('all')" id="filterAll" class="py-1.5 rounded bg-slate-700 text-white transition text-center">Tất cả</button>
-                <button onclick="filterPalette('bookmarked')" id="filterBookmarked" class="py-1.5 rounded hover:bg-slate-700 hover:text-white transition text-center">Đã lưu ⭐</button>
-                <button onclick="filterPalette('unanswered')" id="filterUnanswered" class="py-1.5 rounded hover:bg-slate-700 hover:text-white transition text-center">Chưa làm</button>
+            <div class="grid grid-cols-3 gap-1 p-1.5 bg-slate-900/40 text-[11px] font-medium text-slate-400 border-b border-slate-700 shrink-0">
+                <button onclick="filterPalette('all')" id="filterAll" class="py-1 rounded bg-slate-700 text-white transition text-center">Tất cả</button>
+                <button onclick="filterPalette('bookmarked')" id="filterBookmarked" class="py-1 rounded hover:bg-slate-700 hover:text-white transition text-center">Đã lưu ⭐</button>
+                <button onclick="filterPalette('unanswered')" id="filterUnanswered" class="py-1 rounded hover:bg-slate-700 hover:text-white transition text-center">Chưa làm</button>
             </div>
 
             <!-- Question Grid Palette -->
-            <div id="paletteGrid" class="p-4 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-5 gap-2 content-start">
+            <div id="paletteGrid" class="p-2 sm:p-4 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-8 lg:grid-cols-5 gap-1.5 sm:gap-2 content-start">
                 <!-- Generated dynamically -->
-            </div>
-
-            <!-- Legend & Quick Info -->
-            <div class="p-3 bg-slate-900/60 border-t border-slate-700 text-xs text-slate-400 space-y-1 shrink-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded bg-indigo-600 inline-block"></span> 1-55: Đề cương gốc (6-7đ)
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded bg-amber-600 inline-block"></span> 56-75: Câu dự đoán (3-4đ)
-                </div>
             </div>
         </aside>
 
     </main>
 
+    <!-- Modal Notification / Results -->
     <div id="customModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div id="modalContentBox" class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl text-slate-100 transform transition-all scale-95 opacity-0">
+        <div id="modalContentBox" class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl text-slate-100 transform transition-all scale-95 opacity-0 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <!-- Modal Header -->
-            <div class="flex justify-between items-center pb-4 border-b border-slate-700">
-                <h3 id="modalTitle" class="text-lg font-bold text-indigo-400">Thông báo</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2">&times;</button>
+            <div class="flex justify-between items-center pb-3 border-b border-slate-700">
+                <h3 id="modalTitle" class="text-base sm:text-lg font-bold text-indigo-400">Thông báo</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xl font-bold px-2">&times;</button>
             </div>
             <!-- Modal Body -->
-            <div id="modalBody" class="py-6 text-slate-300 text-sm sm:text-base leading-relaxed">
+            <div id="modalBody" class="py-4 text-slate-300 text-sm leading-relaxed">
                 <!-- Content -->
             </div>
             <!-- Modal Footer -->
-            <div id="modalFooter" class="flex justify-end gap-3 pt-4 border-t border-slate-700">
+            <div id="modalFooter" class="flex justify-end gap-3 pt-3 border-t border-slate-700">
                 <button onclick="closeModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-slate-200 transition">Đóng</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 55 questions from exact PDF + 20 predicted questions = 75 questions total
+        // 75 questions dataset
         const questionsData = [
             // --- 55 ĐỀ CƯƠNG GỐC ---
             {
@@ -738,24 +736,24 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
             // Update badge & progress
             const badge = document.getElementById('questionCategoryBadge');
             if (targetQ.type === 'official') {
-                badge.innerText = `Đề cương chính thức (Câu ${targetQ.id}/55 - 6-7 điểm)`;
-                badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
+                badge.innerText = `Đề cương (Câu ${targetQ.id}/55)`;
+                badge.className = "px-2.5 py-0.5 rounded-full font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 truncate";
             } else {
-                badge.innerText = `Câu hỏi Dự đoán (Câu ${targetQ.id}/75 - 3-4 điểm)`;
-                badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                badge.innerText = `Dự đoán (Câu ${targetQ.id}/75)`;
+                badge.className = "px-2.5 py-0.5 rounded-full font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 truncate";
             }
 
-            document.getElementById('questionProgressText').innerText = `Câu ${realIndex + 1} / 75`;
+            document.getElementById('questionProgressText').innerText = `${realIndex + 1}/75`;
             document.getElementById('questionTitle').innerText = `${realIndex + 1}. ${targetQ.question}`;
 
             // Bookmark button state
             const bmBtn = document.getElementById('bookmarkBtn');
             if (bookmarked[realIndex]) {
-                bmBtn.className = "px-3 py-1.5 rounded-lg bg-amber-600/30 text-amber-300 text-xs font-medium transition flex items-center gap-1.5 border border-amber-500/50";
-                bmBtn.innerText = "⭐ Đã đánh dấu";
+                bmBtn.className = "px-2.5 py-1 rounded-lg bg-amber-600/30 text-amber-300 text-xs font-medium transition flex items-center gap-1 border border-amber-500/50";
+                bmBtn.innerHTML = "⭐ <span class='hidden sm:inline'>Đã lưu</span>";
             } else {
-                bmBtn.className = "px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition flex items-center gap-1.5 border border-slate-600";
-                bmBtn.innerText = "⭐ Đánh dấu ôn lại";
+                bmBtn.className = "px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition flex items-center gap-1 border border-slate-600";
+                bmBtn.innerHTML = "⭐ <span class='hidden sm:inline'>Đánh dấu</span>";
             }
 
             // Render options
@@ -766,7 +764,7 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
 
             targetQ.options.forEach((opt, optIdx) => {
                 const isSelected = userAnswers[realIndex] === optIdx;
-                let btnClass = "w-full text-left p-4 rounded-xl border transition flex items-center gap-3 text-sm sm:text-base font-medium ";
+                let btnClass = "w-full text-left p-3 sm:p-4 rounded-xl border transition flex items-center gap-3 text-xs sm:text-base font-medium ";
                 
                 if (isSubmitted || isAnswered) {
                     if (optIdx === targetQ.correct) {
@@ -787,7 +785,7 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
                 const letter = ['A', 'B', 'C', 'D'][optIdx];
                 optsContainer.innerHTML += `
                     <button onclick="selectOption(${realIndex}, ${optIdx})" ${isSubmitted || isAnswered ? 'disabled' : ''} class="${btnClass}">
-                        <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center font-bold text-xs shrink-0">${letter}</span>
+                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center font-bold text-xs shrink-0">${letter}</span>
                         <span class="flex-1">${opt}</span>
                     </button>
                 `;
@@ -852,9 +850,9 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
             ['all', 'bookmarked', 'unanswered'].forEach(t => {
                 const btn = document.getElementById(`filter${t.charAt(0).toUpperCase() + t.slice(1)}`);
                 if (t === type) {
-                    btn.className = "py-1.5 rounded bg-slate-700 text-white transition text-center";
+                    btn.className = "py-1 rounded bg-slate-700 text-white transition text-center";
                 } else {
-                    btn.className = "py-1.5 rounded hover:bg-slate-700 hover:text-white transition text-center";
+                    btn.className = "py-1 rounded hover:bg-slate-700 hover:text-white transition text-center";
                 }
             });
             const filtered = getFilteredQuestions();
@@ -873,7 +871,7 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
                 const isCurrent = idx === currentQuestionIndex;
                 const isBM = bookmarked[idx];
 
-                let btnClass = "w-9 h-9 rounded-xl font-semibold text-xs transition flex items-center justify-center relative ";
+                let btnClass = "w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl font-semibold text-[11px] sm:text-xs transition flex items-center justify-center relative ";
                 
                 if (isSubmitted || isAnswered) {
                     const isCorrect = userAnswers[idx] === q.correct;
@@ -891,13 +889,13 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
                 }
 
                 if (isCurrent) {
-                    btnClass += " ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-900";
+                    btnClass += " ring-2 ring-cyan-400 ring-offset-1 ring-offset-slate-900";
                 }
 
                 paletteGrid.innerHTML += `
                     <button onclick="jumpToQuestion(${idx})" class="${btnClass}">
                         ${idx + 1}
-                        ${isBM ? '<span class="absolute -top-1 -right-1 text-[10px]">⭐</span>' : ''}
+                        ${isBM ? '<span class="absolute -top-1 -right-1 text-[9px]">⭐</span>' : ''}
                     </button>
                 `;
             });
@@ -920,7 +918,7 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
 
         function updateAnsweredCount() {
             const answered = userAnswers.filter(ans => ans !== null).length;
-            document.getElementById('answeredCount').innerText = `${answered}/75 đã làm`;
+            document.getElementById('answeredCount').innerText = `${answered}/75`;
         }
 
         function confirmSubmitQuiz() {
@@ -939,7 +937,6 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
         }
 
         function submitQuiz() {
-            // Đóng hẳn hộp thoại xác nhận trước
             const modal = document.getElementById('customModal');
             const box = document.getElementById('modalContentBox');
             box.classList.remove('scale-100', 'opacity-100');
@@ -972,20 +969,19 @@ Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cá
                 rankEmoji = "📚💪";
             }
 
-            // Mở bảng kết quả sau một khoảng trễ rất ngắn để tách biệt sự kiện bấm nút
             setTimeout(() => {
                 showCustomModal("Kết Quả Ôn Tập", `
-                    <div class="text-center space-y-4">
-                        <div class="text-4xl">${rankEmoji}</div>
-                        <h4 class="text-2xl font-bold text-cyan-300">Điểm số: ${correctCount} / 75</h4>
-                        <p class="text-lg font-semibold text-indigo-300">Đánh giá năng lực: <span class="text-white">${rankText}</span></p>
+                    <div class="text-center space-y-3">
+                        <div class="text-3xl sm:text-4xl">${rankEmoji}</div>
+                        <h4 class="text-xl sm:text-2xl font-bold text-cyan-300">Điểm số: ${correctCount} / 75</h4>
+                        <p class="text-base sm:text-lg font-semibold text-indigo-300">Đánh giá năng lực: <span class="text-white">${rankText}</span></p>
                         <p class="text-xs text-slate-400">Thời gian hoàn thành: ${document.getElementById('timerDisplay').innerText.replace('⏱️ ', '')}</p>
-                        <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 text-sm text-left space-y-1">
+                        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-700 text-xs sm:text-sm text-left space-y-1">
                             <p>✅ Số câu đúng: <b>${correctCount}</b></p>
                             <p>❌ Số câu sai/chưa làm: <b>${75 - correctCount}</b></p>
                             <p>📌 Ghi chú: 55 câu đề cương đầu (6-7đ), 20 câu dự đoán (3-4đ).</p>
                         </div>
-                        <button onclick="closeModal(); loadQuestion(currentQuestionIndex);" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white transition shadow-lg shadow-indigo-600/30">
+                        <button onclick="closeModal(); loadQuestion(currentQuestionIndex);" class="w-full py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white transition shadow-lg shadow-indigo-600/30 text-sm">
                             Xem lại chi tiết đáp án & giải thích 🔍
                         </button>
                     </div>
