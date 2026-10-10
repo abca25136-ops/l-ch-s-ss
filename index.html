@@ -1,8 +1,3 @@
-Tôi đã cập nhật lại code để khi bạn hoàn thành việc trả lời đủ cả **75 câu hỏi**, hệ thống sẽ **tự động nộp bài ngay lập tức** sau một thoáng ngắn (để kịp hiển thị hiệu ứng chọn đáp án của câu cuối) mà không cần phải bấm nút "Nộp Bài" nữa.
-
-Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp tính năng tự động nộp bài:
-
-```html
 <!DOCTYPE html>
 <html lang="vi" class="h-full">
 <head>
@@ -44,7 +39,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-hidden">
         
         <!-- Left / Center: Question Card Area -->
-        <section class="lg:col-span-3 flex flex-col bg-slate-800/75 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl overflow-hidden">
+        <section class="lg:col-span-3 flex flex-col bg-slate-800/70 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl overflow-hidden">
             <!-- Toolbar / Filter Bar -->
             <div class="bg-slate-800/90 p-4 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <div class="flex items-center gap-2">
@@ -95,7 +90,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
         </section>
 
         <!-- Right Sidebar: Question Palette & Stats -->
-        <aside class="lg:col-span-1 bg-slate-800/75 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        <aside class="lg:col-span-1 bg-slate-800/70 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl flex flex-col overflow-hidden">
             <div class="p-4 bg-slate-800/90 border-b border-slate-700 flex justify-between items-center">
                 <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
                     📋 Bảng Câu Hỏi (75)
@@ -118,7 +113,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
             <!-- Legend & Quick Info -->
             <div class="p-3 bg-slate-900/60 border-t border-slate-700 text-xs text-slate-400 space-y-1">
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded bg-indigo-600 inline-block"></span> 1-55: Đề cương gốc (6-7đ)
+                    <span class="w-3 h-3 rounded bg-indigo-600 inline-block"></i></span> 1-55: Đề cương gốc (6-7đ)
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded bg-amber-600 inline-block"></span> 56-75: Câu dự đoán (3-4đ)
@@ -147,7 +142,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
     </div>
 
     <script>
-        // 75 questions total
+        // 55 questions from exact PDF + 20 predicted questions = 75 questions total
         const questionsData = [
             // --- 55 ĐỀ CƯƠNG GỐC ---
             {
@@ -266,7 +261,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
                 id: 17, type: "official",
                 question: "Sau Chiến tranh lạnh, một trong những xu thế nổi bật của thế giới là?",
                 options: ["Hòa bình, hợp tác và phát triển.", "Chiến tranh thế giới mới.", "Chủ nghĩa phát xít phục hồi.", "Các nước đóng cửa với nhau."],
-                correct: 0,
+                    correct: 0,
                 explanation: "Xu thế hòa bình, hợp tác và phát triển trở thành dòng chảy chính của quan hệ quốc tế sau Chiến tranh lạnh."
             },
             {
@@ -702,6 +697,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
                     const optIndex = parseInt(e.key) - 1;
                     const q = getFilteredQuestions()[currentQuestionIndex];
                     if (q) {
+                        // find real index
                         const realIdx = questionsData.findIndex(item => item.id === q.id);
                         selectOption(realIdx, optIndex);
                     }
@@ -816,18 +812,6 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
         function selectOption(realIndex, optIdx) {
             if (isSubmitted || userAnswers[realIndex] !== null) return;
             userAnswers[realIndex] = optIdx;
-            
-            // Check if all 75 questions are answered -> Auto submit
-            const unansweredCount = userAnswers.filter(ans => ans === null).length;
-            if (unansweredCount === 0 && !isSubmitted) {
-                loadQuestion(questionsData.findIndex(q => q.id === questionsData[realIndex].id));
-                renderPalette();
-                setTimeout(() => {
-                    submitQuiz();
-                }, 400); // Đợi 400ms để hiển thị hiệu ứng chọn câu cuối rồi tự động nộp bài
-                return;
-            }
-
             const filtered = getFilteredQuestions();
             let fIndex = filtered.findIndex(q => q.id === questionsData[realIndex].id);
             if (fIndex === -1) {
@@ -917,6 +901,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
 
         function jumpToQuestion(realIndex) {
             const targetQ = questionsData[realIndex];
+            // if current filter excludes this question, reset filter to all
             const filtered = getFilteredQuestions();
             if (!filtered.some(q => q.id === targetQ.id)) {
                 filterPalette('all');
@@ -1003,6 +988,7 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
         function showCustomModal(title, htmlContent) {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalBody').innerHTML = htmlContent;
+            // hide footer if custom buttons provided inside htmlContent
             document.getElementById('modalFooter').style.display = htmlContent.includes('class="flex justify-end') ? 'none' : 'flex';
             
             const modal = document.getElementById('customModal');
@@ -1026,5 +1012,3 @@ Dưới đây là toàn bộ mã nguồn hoàn chỉnh đã được tích hợp
     </script>
 </body>
 </html>
-
-```
