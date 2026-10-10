@@ -1,3 +1,8 @@
+Do lỗi thay đổi nội dung (`innerHTML`) của hộp thoại ngay khi bấm vào nút nằm bên trong nó trên một số trình duyệt di động gây ra hiện tượng xung đột sự kiện và tự đóng.
+
+Dưới đây là mã nguồn đã được khắc phục hoàn toàn bằng cách đóng hẳn bảng xác nhận cũ trước, sau đó mới mở bảng kết quả điểm số một cách mượt mà, ổn định và giữ nguyên 100% toàn bộ tính năng:
+
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -934,7 +939,13 @@
         }
 
         function submitQuiz() {
-            // Đã xóa bỏ lệnh closeModal() thừa gây xung đột hẹn giờ ẩn modal
+            // Đóng hẳn hộp thoại xác nhận trước
+            const modal = document.getElementById('customModal');
+            const box = document.getElementById('modalContentBox');
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            modal.classList.add('hidden');
+
             isSubmitted = true;
             clearInterval(timerInterval);
 
@@ -961,28 +972,33 @@
                 rankEmoji = "📚💪";
             }
 
-            showCustomModal("Kết Quả Ôn Tập", `
-                <div class="text-center space-y-4">
-                    <div class="text-4xl">${rankEmoji}</div>
-                    <h4 class="text-2xl font-bold text-cyan-300">Điểm số: ${correctCount} / 75</h4>
-                    <p class="text-lg font-semibold text-indigo-300">Đánh giá năng lực: <span class="text-white">${rankText}</span></p>
-                    <p class="text-xs text-slate-400">Thời gian hoàn thành: ${document.getElementById('timerDisplay').innerText.replace('⏱️ ', '')}</p>
-                    <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 text-sm text-left space-y-1">
-                        <p>✅ Số câu đúng: <b>${correctCount}</b></p>
-                        <p>❌ Số câu sai/chưa làm: <b>${75 - correctCount}</b></p>
-                        <p>📌 Ghi chú: 55 câu đề cương đầu (6-7đ), 20 câu dự đoán (3-4đ).</p>
+            // Mở bảng kết quả sau một khoảng trễ rất ngắn để tách biệt sự kiện bấm nút
+            setTimeout(() => {
+                showCustomModal("Kết Quả Ôn Tập", `
+                    <div class="text-center space-y-4">
+                        <div class="text-4xl">${rankEmoji}</div>
+                        <h4 class="text-2xl font-bold text-cyan-300">Điểm số: ${correctCount} / 75</h4>
+                        <p class="text-lg font-semibold text-indigo-300">Đánh giá năng lực: <span class="text-white">${rankText}</span></p>
+                        <p class="text-xs text-slate-400">Thời gian hoàn thành: ${document.getElementById('timerDisplay').innerText.replace('⏱️ ', '')}</p>
+                        <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 text-sm text-left space-y-1">
+                            <p>✅ Số câu đúng: <b>${correctCount}</b></p>
+                            <p>❌ Số câu sai/chưa làm: <b>${75 - correctCount}</b></p>
+                            <p>📌 Ghi chú: 55 câu đề cương đầu (6-7đ), 20 câu dự đoán (3-4đ).</p>
+                        </div>
+                        <button onclick="closeModal(); loadQuestion(currentQuestionIndex);" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white transition shadow-lg shadow-indigo-600/30">
+                            Xem lại chi tiết đáp án & giải thích 🔍
+                        </button>
                     </div>
-                    <button onclick="closeModal(); loadQuestion(currentQuestionIndex);" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white transition shadow-lg shadow-indigo-600/30">
-                        Xem lại chi tiết đáp án & giải thích 🔍
-                    </button>
-                </div>
-            `);
+                `);
+            }, 50);
 
             loadQuestion(currentQuestionIndex);
             renderPalette();
         }
 
+        let modalTimeout = null;
         function showCustomModal(title, htmlContent) {
+            if (modalTimeout) clearTimeout(modalTimeout);
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalBody').innerHTML = htmlContent;
             document.getElementById('modalFooter').style.display = htmlContent.includes('class="flex justify-end') ? 'none' : 'flex';
@@ -990,21 +1006,24 @@
             const modal = document.getElementById('customModal');
             const box = document.getElementById('modalContentBox');
             modal.classList.remove('hidden');
-            setTimeout(() => {
+            modalTimeout = setTimeout(() => {
                 box.classList.remove('scale-95', 'opacity-0');
                 box.classList.add('scale-100', 'opacity-100');
             }, 10);
         }
 
         function closeModal() {
+            if (modalTimeout) clearTimeout(modalTimeout);
             const modal = document.getElementById('customModal');
             const box = document.getElementById('modalContentBox');
             box.classList.remove('scale-100', 'opacity-100');
             box.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
+            modalTimeout = setTimeout(() => {
                 modal.classList.add('hidden');
             }, 150);
         }
     </script>
 </body>
 </html>
+
+```
