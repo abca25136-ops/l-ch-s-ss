@@ -1,3 +1,7 @@
+Đã cập nhật tính năng **tự động chuyển sang câu tiếp theo** ngay sau khi bạn bấm chọn đáp án (có độ trễ nhẹ 0.25 giây để kịp thấy hiệu ứng chọn, và bạn vẫn có thể bấm quay lại hoặc chọn trực tiếp trên bảng câu hỏi để xem lại bất cứ lúc nào).
+
+Toàn bộ mã nguồn hoàn chỉnh:
+
 ```html
 <!DOCTYPE html>
 <html lang="vi" class="h-full">
@@ -792,11 +796,20 @@
         function selectOption(realIndex, optIdx) {
             if (isSubmitted || userAnswers[realIndex] !== null) return;
             userAnswers[realIndex] = optIdx;
+            
             const filtered = getFilteredQuestions();
             let fIndex = filtered.findIndex(q => q.id === questionsData[realIndex].id);
             if (fIndex === -1) fIndex = 0;
             loadQuestion(fIndex);
             renderPalette();
+
+            // Auto chuyển câu tiếp theo sau 250ms
+            setTimeout(() => {
+                const currentFilteredIdx = filtered.findIndex(q => q.id === questionsData[currentQuestionIndex].id);
+                if (currentFilteredIdx < filtered.length - 1) {
+                    loadQuestion(currentFilteredIdx + 1);
+                }
+            }, 250);
         }
 
         function nextQuestion() {
@@ -933,7 +946,7 @@
                 rankText = "(gà)";
                 rankEmoji = "🐔🐾";
             } else {
-                rankText = "(hahahaha)";
+                rankText = "(cần cố gắng thêm nha!)";
                 rankEmoji = "📚💪";
             }
 
