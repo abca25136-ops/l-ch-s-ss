@@ -934,7 +934,7 @@
         }
 
         function submitQuiz() {
-            closeModal();
+            // Đã xóa bỏ lệnh closeModal() thừa gây xung đột hẹn giờ ẩn modal
             isSubmitted = true;
             clearInterval(timerInterval);
 
